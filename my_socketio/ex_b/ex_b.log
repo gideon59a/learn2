@@ -1,0 +1,11 @@
+2022-12-16 19:14:54,169 - logger - http_requests - DEBUG - Post response,json: <class 'dict'> , {'status': 'Accepted', 'transaction_id': 0}
+2022-12-16 19:14:55,171 - logger - http_requests - DEBUG - GET url = http://127.0.0.1:5902/get_op_status/0 
+2022-12-16 19:14:55,180 - logger - http_requests - DEBUG - Get response,json: <class 'dict'> , {'status': 'inprogress'}
+2022-12-16 19:14:56,183 - logger - http_requests - DEBUG - GET url = http://127.0.0.1:5902/get_op_status/0 
+2022-12-16 19:14:56,188 - logger - http_requests - DEBUG - Get response,json: <class 'dict'> , {'status': 'inprogress'}
+2022-12-16 19:14:57,190 - logger - http_requests - DEBUG - GET url = http://127.0.0.1:5902/get_op_status/0 
+2022-12-16 19:14:57,195 - logger - http_requests - DEBUG - Get response,json: <class 'dict'> , {'status': 'inprogress'}
+2022-12-16 19:14:58,197 - logger - http_requests - DEBUG - GET url = http://127.0.0.1:5902/get_op_status/0 
+2022-12-16 19:14:58,206 - logger - http_requests - DEBUG - Get response,json: <class 'dict'> , {'status': 'inprogress'}
+2022-12-16 19:14:59,208 - logger - http_requests - DEBUG - GET url = http://127.0.0.1:5902/get_op_status/0 
+2022-12-16 19:14:59,215 - logger - http_requests - DEBUG - Get response,json: <class 'dict'> , {'status': 'done'}
