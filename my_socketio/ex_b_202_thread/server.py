@@ -4,9 +4,10 @@ import threading
 from dataclasses import dataclass, field
 
 # TEST BY:
-# curl -X POST -H 'Content-Type: application/json' http://localhost:5902/start_task -d '{"a":"b"}'
+# c'
 # curl -X GET http://localhost:5902/get_op_status/10
 
+# todo: Should I use atexit.register(func) when the program fails.aborted, or by join for normal operation ?
 
 aa = ["" for i in range(10)]
 print(aa)
@@ -91,4 +92,7 @@ def get_op_status(tid):
 
 
 if __name__ == "__main__":
+    #import atexit
+    #atexit.register()
+
     app.run(host="0.0.0.0", port=5902, debug=True)

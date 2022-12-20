@@ -1,9 +1,9 @@
 # socketio
-Learn python socketio
-References:
+Learn python socketio  
+## References
   * https://python-socketio.readthedocs.io/en/latest/
 
-## Example a (client_a and server_a):
+## Example a (client_a and server_a)
 **Features**
  * Bidirectional traffic between clients and server. Only one client appears in this example, but the sid can  
 be the basis for supporting multiple clients,  
@@ -13,7 +13,7 @@ Note that the server is synchronous and in this example it responses only after 
 It is not clear for me whether the server could use sio.start_background_task as the client does (==> todo worth checking)  
 but anyway a better way seems to be using threading as used in ex_b.
 
-**Notes:**  
+**Notes**  
 * **sid** - On connect the server creates the sid that 
 In the example the client "connect" contains also emit login + credentials that could be processed by the server  
 * **background process** As commonly required

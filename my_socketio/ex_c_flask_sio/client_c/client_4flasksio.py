@@ -42,7 +42,7 @@ def my_event(data):
 ###################################################
 import sys
 sys.path.append("..")
-from http_requests import HttpRequests
+from my_http_requests import HttpRequests  # Note that http_requests is a local module rather than the python regular module
 from logger import Alogger
 URL_PREFIX = "http://127.0.0.1:5903/"
 
@@ -78,9 +78,9 @@ print("after send_some_req")
 sio.emit('message', {"YYY from": "YYY client"})
 print('after emit, sleep')
 time.sleep(10)
-print('exit 666')
+print('Test Finished - exit 0')
 sio.disconnect()
-exit(666)
+exit(0)
 
 #sio.emit('my_message', {"contents2222": "ZZZZZZZZZZZZ"})
 print('exit 777')

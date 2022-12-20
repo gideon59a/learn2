@@ -4,7 +4,7 @@ import time
 
 sys.path.append("..")
 
-from http_requests import HttpRequests
+from my_http_requests import HttpRequests
 from logger import Alogger
 
 URL_PREFIX = "http://127.0.0.1:5902/"
