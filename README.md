@@ -1,3 +1,9 @@
-Several threading related examples:   
-* **ex_a** - simples socketio python client and server
+# Learn socketio and some relates subjects
+Examples (each in a separated folder):   
+* **ex_a_socketio** - simples socketio python client and server
+* **ex_b_202_thread** - flask server returning 202 and creating a thread for the long processing of the request
+* **ex_c_flask_sio** - Shows a flask-socketio server, so the server can both get http requests as well as socketio events.  
 
+
+**To read:**
+* https://testdriven.io/blog/flask-async/

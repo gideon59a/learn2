@@ -8,6 +8,7 @@ app = socketio.WSGIApp(sio, static_files={
 
 @sio.event
 def connect(sid, environ):
+    """On connection the server creates a sid for the socket connection, as printed below"""
     print('connect ', sid)
     print(f'environ: {environ}')
 
@@ -43,4 +44,4 @@ def calc_square(sid, data):
 
 
 if __name__ == '__main__':
-    eventlet.wsgi.server(eventlet.listen(('', 5999)), app)
+    eventlet.wsgi.server(eventlet.listen(('', 5901)), app)

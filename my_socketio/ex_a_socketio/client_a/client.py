@@ -37,7 +37,7 @@ def my_event(data):
     # handle the message
     print(data)
 
-sio.connect('http://localhost:5999')
+sio.connect('http://localhost:5901')
 
 sio.emit('my_message', {"contents": "yyyyyyyyyyyyy"})
 #time.sleep(5)
@@ -59,9 +59,11 @@ task = sio.start_background_task(my_background_task, sio)
 
 run = False
 while run:
-    inp = input("Enter string:\n")
+    inp = input("Client main. Enter string to emit:\n")
     print(f'String entered by client user:{inp}')
     sio.emit('my_message', {"contents": inp})
     if inp == 'stop':
         run = False
+    time.sleep(10)
+#exit(0)
 sio.wait()
