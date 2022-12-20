@@ -1,7 +1,7 @@
 import socketio
 import time
 
-from my_background_task import my_background_task
+#from my_background_task import my_background_task
 
 sio = socketio.Client()
 #sio = socketio.Client(logger=True, engineio_logger=True)  # for logs run this line instead
@@ -10,7 +10,7 @@ sio = socketio.Client()
 def connect():
     print('connection established')
     print('my sid is', sio.sid)  # The sid the server returns that identifies the specific client session
-    sio.emit('login', {'userKey': 'Your Streaming API Key'})  # Triggers login event to be processed by the server
+    #sio.emit('login', {'userKey': 'Your Streaming API Key'})  # Triggers login event to be processed by the server
 
 @sio.event
 def connect_error(data):
@@ -24,6 +24,7 @@ def disconnect():
 def my_message(data):  # "my_message" is the event name that the server has to refer to
     print('message received with ', data)
 
+'''
 @sio.on('handshake')  # Here the event name can be different than the def funcition, I am not fond of this method
 def on_message(data):
     print('Got from server_a on handShake:', data)
@@ -36,14 +37,55 @@ def calc_square(num):
 def my_event(data):
     # handle the message
     print(data)
+'''
 
-sio.connect('http://localhost:5901')
+###################################################
+import sys
+sys.path.append("..")
+from http_requests import HttpRequests
+from logger import Alogger
+URL_PREFIX = "http://127.0.0.1:5903/"
 
-sio.emit('my_message', {"contents": "yyyyyyyyyyyyy"})
-#time.sleep(5)
+my_logger = Alogger('ex_c.log')
+logger = my_logger.get_logger()
+http_req = HttpRequests(logger)
+
+def post_task():
+    path_post_task = 'start_task'
+    data = {"a": "b"}
+    url = URL_PREFIX + path_post_task
+    http_code, rjson = http_req.post(url, data)
+    print(f' json got: {type(rjson)} , {rjson} code: {http_code}')
+    return http_code, rjson
+
+def send_some_req():
+    http_code, rjson = post_task()
+    print(f'http_code: {http_code}, rjson: {rjson}')
+
+
+
+
+
+
+
+#******  STRAT ****************
+
+
+sio.connect('http://localhost:5903')
+print("after connect")
+send_some_req()
+print("after send_some_req")
+sio.emit('message', {"YYY from": "YYY client"})
+print('after emit, sleep')
+time.sleep(10)
+print('exit 666')
+sio.disconnect()
+exit(666)
+
 #sio.emit('my_message', {"contents2222": "ZZZZZZZZZZZZ"})
-
-
+print('exit 777')
+sio.disconnect()
+exit(777)
 # The following is an example of a request for which the server answers directly rather than triggering another event
 # by the server.
 def server_response(status, result):
@@ -55,7 +97,7 @@ time.sleep(3)
 
 # The following line is for client background processing other than the sio. A common example could be user input to the
 # client that has to be processed and then trigger some emit towards the server.
-task = sio.start_background_task(my_background_task, sio)
+#task = sio.start_background_task(my_background_task, sio)
 
 run = False
 while run:
