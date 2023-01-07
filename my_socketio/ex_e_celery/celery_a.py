@@ -9,9 +9,11 @@ import sys
 sys.path.append("..")
 from constants import redis_ip, redis_port  # '172.18.122.195
 
-
-app = Celery('celery1', backend=f'redis://{redis_ip}:{redis_port}/1', broker=f'redis://{redis_ip}:{redis_port}/2')
+# Celery
 # Backend db 1 is for the results,  broker db 2 is for the tasks queue.
+app = Celery('celery_a', backend=f'redis://{redis_ip}:{redis_port}/1', broker=f'redis://{redis_ip}:{redis_port}/2')
+# app.conf.task_routes = {'queue_a.tasks.*': {'queue': 'queue_a'}}  # NOT CLEAR what does it do
+
 
 @app.task  # (bind=True)
 def add(x, y):
@@ -38,3 +40,5 @@ def inspect_celery_info():
     reserved = i.reserved()
 
     return scheduled, active, reserved
+
+
