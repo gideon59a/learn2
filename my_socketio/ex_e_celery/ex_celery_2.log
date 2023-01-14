@@ -1,0 +1,80 @@
+C:\Python\Python39\python.exe C:/pythonProjects/socketio/my_socketio/ex_e_celery/call_tasks.py
+For sending a task to the a specific task queue enter the queue name. Otherwise press enter
+Enter celery task queue name: celery
+Enter 1 for single task test, or 2 for two tasks test (default=1):2
+Connected to redis
+Running 2 task(s) on queue celery
+Triggering task1 at time 18.0926156
+Task args: (1, 10)
+Task1 was triggered at time 18.7321206
+Triggering task2 at time 18.7321634
+Task args: (22, 20)
+Task2 was triggered at time 18.7348068
+Task(s) were triggered. Time is 18.7348656
+
+Note: The below result is a <class 'celery.result.AsyncResult'>. When directly read it provides the task id.
+result type is: <class 'celery.result.AsyncResult'>.
+When we print this instance it returns the task id: d1060bda-91f8-4466-ad14-5102d258648e
+  while the task id can be also got from result.id: d1060bda-91f8-4466-ad14-5102d258648e
+Time is 18.7349188
+
+task_id.status (PENDING is expected as the task is being processed): PENDING
+
+Celery info - Printing celery inspect info BEFORE waiting for the result: (Note that Reserved tasks are tasks that have been received but are still waiting to be executed)
+scheduled tasks: {'celery@N-20N3PF231BWQ': []}
+active tasks: {'celery@N-20N3PF231BWQ': [{'id': 'd1060bda-91f8-4466-ad14-5102d258648e', 'name': 'celery1.add', 'args': [1, 10], 'kwargs': {}, 'type': 'celery1.add', 'hostname': 'celery@N-20N3PF231BWQ', 'time_start': 1673705461.562122, 'acknowledged': True, 'delivery_info': {'exchange': '', 'routing_key': 'celery', 'priority': 0, 'redelivered': None}, 'worker_pid': 2002}]}
+reserved tasks: {'celery@N-20N3PF231BWQ': [{'id': 'f2d0cb95-48a5-4465-9f96-09371dc5d414', 'name': 'celery1.add', 'args': [22, 20], 'kwargs': {}, 'type': 'celery1.add', 'hostname': 'celery@N-20N3PF231BWQ', 'time_start': None, 'acknowledged': False, 'delivery_info': {'exchange': '', 'routing_key': 'celery', 'priority': 0, 'redelivered': None}, 'worker_pid': None}]}
+
+
+
+Redis info - Reading task queue:
+Redis task queue not found, probably because all tasks were already taken by workers
+
+Redis info - Reading from redis task1 result before it appears in redis:
+Redis Task result: <class 'NoneType'> None
+Waiting for the 1st task to finish. Time is 22.0985281
+Waiting for task to finish, 10 sec timeout
+Task status: PENDING
+Task status: PENDING
+Task status: PENDING
+Task status: PENDING
+Task status: PENDING
+Task status: PENDING
+Task status: SUCCESS
+Task result: 11
+
+Redis info - Reading from redis the result after task 1 is done. See task2 is now in the active tasks queue:
+Redis Task result: <class 'bytes'> b'{"status": "SUCCESS", "result": 11, "traceback": null, "children": [], "date_done": "2023-01-14T14:11:10.572875", "task_id": "d1060bda-91f8-4466-ad14-5102d258648e"}'
+Reading from redis the task result key: <class 'bytes'>  b'{"status": "SUCCESS", "result": 11, "traceback": null, "children": [], "date_done": "2023-01-14T14:11:10.572875", "task_id": "d1060bda-91f8-4466-ad14-5102d258648e"}' read at 28.1990441
+so it has status: SUCCESS  with result: 11
+Celery info - Printing celery inspect info after task 1 is done:
+scheduled tasks: {'celery@N-20N3PF231BWQ': []}
+active tasks: {'celery@N-20N3PF231BWQ': [{'id': 'f2d0cb95-48a5-4465-9f96-09371dc5d414', 'name': 'celery1.add', 'args': [22, 20], 'kwargs': {}, 'type': 'celery1.add', 'hostname': 'celery@N-20N3PF231BWQ', 'time_start': 1673705470.5790284, 'acknowledged': True, 'delivery_info': {'exchange': '', 'routing_key': 'celery', 'priority': 0, 'redelivered': None}, 'worker_pid': 2002}]}
+reserved tasks: {'celery@N-20N3PF231BWQ': []}
+
+
+Task status2: PENDING
+Task result2: None
+Waiting for task to finish, 10 sec timeout
+Task status: PENDING
+Task status: PENDING
+Task status: PENDING
+Task status: PENDING
+Task status: PENDING
+Task status: SUCCESS
+Task result: 42
+
+Redis info: Reading from redis the result after task 2 is done.
+Redis Task result: <class 'bytes'> b'{"status": "SUCCESS", "result": 42, "traceback": null, "children": [], "date_done": "2023-01-14T14:11:19.590576", "task_id": "f2d0cb95-48a5-4465-9f96-09371dc5d414"}'
+Reading from redis the task result key: <class 'bytes'>  b'{"status": "SUCCESS", "result": 42, "traceback": null, "children": [], "date_done": "2023-01-14T14:11:19.590576", "task_id": "f2d0cb95-48a5-4465-9f96-09371dc5d414"}' read at 36.8320945
+so it has status: SUCCESS  with result: 42
+
+Printing celery inspect info at the END (see no tasks are now in the active tasks queue):
+scheduled tasks: {'celery@N-20N3PF231BWQ': []}
+active tasks: {'celery@N-20N3PF231BWQ': []}
+reserved tasks: {'celery@N-20N3PF231BWQ': []}
+
+
+End.
+
+Process finished with exit code 0
