@@ -10,7 +10,7 @@ sys.path.append("..")
 from constants import redis_ip, redis_port  # '172.18.122.195
 
 
-app = Celery('celery1', backend=f'redis://{redis_ip}:{redis_port}/1', broker=f'redis://{redis_ip}:{redis_port}/2')
+app = Celery('celery_worker', backend=f'redis://{redis_ip}:{redis_port}/1', broker=f'redis://{redis_ip}:{redis_port}/2')
 # Backend db 1 is for the results,  broker db 2 is for the tasks queue.
 
 @app.task  # (bind=True)

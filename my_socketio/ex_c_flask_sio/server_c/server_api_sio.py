@@ -2,8 +2,9 @@
 #   https://flask-socketio.readthedocs.io/en/latest/getting_started.html
 #   https://stackoverflow.com/questions/48160130/using-flask-socketio-and-the-socketio-client
 
-from flask import Flask, request
-from flask_socketio import SocketIO, emit
+from flask import Flask, request, jsonify
+from flask_socketio import SocketIO, emit, \
+     ConnectionRefusedError, join_room, disconnect, leave_room, send
 
 app = Flask(__name__)
 sio = SocketIO(app)
