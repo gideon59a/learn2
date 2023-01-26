@@ -3,7 +3,7 @@ import json
 import time
 import sys
 
-from celery1 import add, inspect_celery_info  # The tasks celery worker supports
+from celery_worker import add, inspect_celery_info  # The tasks celery worker supports
 from constants import redis_ip
 
 
@@ -32,19 +32,19 @@ class CallTaskTest:
         result = self.send_task(1, 10)
         print(f'Task1 was triggered at time {time.perf_counter()}')
         result2 = None
-        if self.tasks_num == 2:
+        if self.tasks_num > 1:
             print(f'Triggering task2 at time {time.perf_counter()}')
-            result2 = self.send_task(22, 20)
+            result2 = self.send_task(2, 20)
             print(f'Task2 was triggered at time {time.perf_counter()}')
-        if self.tasks_num == 3:
+        if self.tasks_num > 2:
             print(f'Triggering task3 at time {time.perf_counter()}')
-            result2 = self.send_task(33, 30)
+            result3 = self.send_task(3, 30)
         print(f'Task(s) were triggered. Time is {time.perf_counter()}')
 
         print("\nNote: The below result is a <class 'celery.result.AsyncResult'>. When directly read it provides the task id.")
         print(f'result type is: {type(result)}.\n'
               f'When we print this instance it returns the task id: {result}\n'
-              f'as its __repr__ is the task id:  {repr(result)}'
+              f'as its __repr__ is the task id:  {repr(result)}\n'
               f'  while the task id can be also got from result.id: {result.id}')
 
         task_id = result.id
@@ -57,14 +57,15 @@ class CallTaskTest:
             print(
                 f'???!!! For some reason the 2nd tasks was enqueues only after 1st task was ended - SO THE TEST HAS FAILED')
 
+        self.direct_redis_read_task_queue()
+
         print(f'\nCelery info - Printing celery inspect info BEFORE waiting for the result: '
               '(Note that Reserved tasks are tasks that have been received but are still waiting to be executed)')
         self.get_inspect_celery_info()
-        print('\nRedis info - Reading task queue:')
-        self.direct_redis_read_task_queue()
+
         print('\nRedis info - Reading from redis task1 result before it appears in redis: ')
         self.direct_redis_read_result(task_id)  # for learning only
-        print(f'Waiting for the 1st task to finish. Time is {time.perf_counter()}')
+        print(f'Celery: Waiting for the 1st task to finish. Time is {time.perf_counter()}')
         self.wait_for_finish(result)
         print('\nRedis info - Reading from redis the result after task 1 is done. '
               'See task2 is now in the active tasks queue:')
@@ -72,7 +73,7 @@ class CallTaskTest:
         print(f'Celery info - Printing celery inspect info after task 1 is done:')
         self.get_inspect_celery_info()
 
-        if self.tasks_num == 2:
+        if self.tasks_num > 1:
             print(f'Task status2: {result2.status}')
             print(f'Task result2: {result2.result}')
             self.wait_for_finish(result2)
@@ -82,6 +83,12 @@ class CallTaskTest:
             print(f'\nPrinting celery inspect info at the END (see no tasks are now in the active tasks queue):')
 
         self.get_inspect_celery_info()
+
+        if self.tasks_num > 2:
+            print(f'Task status3: {result3.status}')
+            print(f'Task result3: {result3.result}')
+            self.wait_for_finish(result3)
+
         print('End.')
 
     def direct_redis_read_task_queue(self):
@@ -89,49 +96,54 @@ class CallTaskTest:
 
         # Note it is not clear for me when tasks are put in "unacked" redis key and when in the main queue.
         # some ref is http://www.ines-panker.com/2020/10/28/celery-explained.html, which is not too clear as well.
-        # In my testing I've found that when no queue name is defined, the task queue name could be either "unacked"
-        # or "celery". And when a queue name is defined, then the this name is used as the key name.
-        if not self.queue_name and self.rdb2.exists("unacked"):
-            redis_message_queue_name = "unacked"
-        elif not self.queue_name and self.rdb2.exists("celery"):
-            redis_message_queue_name = "celery"
-        elif self.queue_name and self.rdb2.exists(self.queue_name):
-            redis_message_queue_name = self.queue_name
+        # But, in my tests:
+        # when the worker is not available tasks were put into the key=queue name, and once the worker started
+        # the tasks moved under "unacked" key.
+
+        def read_queue(redis_message_queue_name):
+            try:
+                if redis_message_queue_name == "unacked":
+                    tasks_message_queue = self.rdb2.hgetall(redis_message_queue_name)
+                    print(f'Reading from redis message queue "{redis_message_queue_name}" '
+                          f'the tasks that are still waiting in the queue:) # \n {tasks_message_queue}')
+                    print_bytes_dict(tasks_message_queue)
+                else:
+                    tasks_message_queue = self.rdb2.lrange(redis_message_queue_name, 1, 99)
+                    print(f'Reading from redis message queue "{redis_message_queue_name}":')
+                    i = 1
+                    for task_in_queue in tasks_message_queue:
+                        task_in_queue_dict = json.loads(task_in_queue.decode("utf-8"))
+                        print(f'Task #{i}:{task_in_queue_dict}')
+                        i += 1
+                        #for key, val in task_in_queue_dict.items():
+                        #    print(key, val)
+
+            except Exception as e:
+                print(f'Error when reading redis task queue. Error: {str(e)}')
+
+        def print_bytes_dict(dict_in_bytes):
+            for key, val in dict_in_bytes.items():
+                print(key.decode("utf-8"), val.decode("utf-8"))
+
+        print('\nRedis info - Reading task queue:')
+        found = False
+        if self.rdb2.exists("unacked"):
+            read_queue("unacked")
+            found = True
+
+        if not self.queue_name:
+            queue_name = "celery"
         else:
+            queue_name = self.queue_name
+        if self.rdb2.exists(queue_name):
+            read_queue(queue_name)
+            found = True
+        if not found:
             print("Redis task queue not found, probably because all tasks were already taken by workers.\n"
                   "or maybe the unacked key was used for a non default queue, a case which I have not checked.\n"
                   "Note that by default a worker takes some 4 tasks fot itself. "
                   "To see tasks in queue just for testing one may stop the worker...")
-            return
 
-        '''
-        if self.queue_name:
-            redis_message_queue_name = self.queue_name  
-        else:
-            
-            if self.rdb2.exists("unacked"):
-                redis_message_queue_name = "unacked"
-            elif self.rdb2.exists("celery"):
-                redis_message_queue_name = "celery"
-            else:
-                print("Redis task queue not found")
-                return
-        '''
-
-        try:
-            if redis_message_queue_name == "unacked":
-                tasks_message_queue = self.rdb2.hgetall(redis_message_queue_name)
-                print(f'Reading from redis message queue "{redis_message_queue_name}" '
-                      f'the tasks that are still waiting in the queue: \n {tasks_message_queue}')
-            else:
-                tasks_message_queue = self.rdb2.lrange(redis_message_queue_name, 1, 99)
-                print(f'Reading from redis message queue "{redis_message_queue_name}":')
-                for task_in_queue in tasks_message_queue:
-                    task_in_queue_dict = json.loads(task_in_queue.decode("utf-8"))
-                    print(f'Task_in_queue: {task_in_queue_dict}')
-
-        except Exception as e:
-            print(f'Error when reading redis task queue. Error: {str(e)}')
 
     def direct_redis_read_result(self, task_id):
         """Reading the result directly from redis. For learning only.
@@ -152,7 +164,7 @@ class CallTaskTest:
 
     @staticmethod
     def wait_for_finish(result):
-        print('Waiting for task to finish, 10 sec timeout')
+        print('Polling celery result waiting for task to finish, 10 sec timeout')
         for i in range(10):
             status = result.status
             print(f'Task status: {result.status}')
@@ -174,14 +186,19 @@ class CallTaskTest:
 
 if __name__ == "__main__":
     print('For sending a task to the a specific task queue enter the queue name. Otherwise press enter')
+    tasks_num = 1
+    queue_name = 'celery'
     if len(sys.argv) > 1:
         queue_name = sys.argv[1]
         if len(sys.argv) > 2:
-            tasks_num = sys.argv[2]
+            tasks_num = int(sys.argv[2])
     else:  # for pycharm
         queue_name = input("Enter celery task queue name: ")
         tasks_num = input("Enter 1 for single task test, or 2 for two tasks test (default=1):")
         if tasks_num:
             tasks_num = int(tasks_num)
+        else:
+            tasks_num = 1
+    print(f'Running {type(tasks_num)} {tasks_num} tasks using queue {queue_name} ')
     tt = CallTaskTest(queue_name, tasks_num)
     tt.runt()

@@ -5,7 +5,7 @@ Learn python socketio
 
 ## Example a (client_a and server_a)
 **Features**
- * Bidirectional traffic between clients and server. Only one client appears in this example, but the sid can  
+ * Bidirectional traffic between clients and server. Only a single client appears in this example, but the sid can  
 be the basis for supporting multiple clients,  
 along with rooms and namespaces that are not used in this basic example as well ==> todo (worth checking)
  * The client can do some async background task while the server is processing its request.  
